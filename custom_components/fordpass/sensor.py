@@ -337,7 +337,7 @@ class CarSensor(
                             else:
                                 elecs["Trip Efficiency"] = elecs["Trip Distance Traveled"] / elecs["Trip Energy Consumed"]
                 return elecs
-            # SquidBytes: Added elVehCharging
+
             if self.sensor == "elVehCharging":
                 if "xevPlugChargerStatus" not in self.data:
                     return None
@@ -355,9 +355,6 @@ class CarSensor(
                 if "xevChargeStationPowerType" in self.data:
                     cs["Charging Type"] = self.data.get("xevChargeStationPowerType", {}).get("value", "Unsupported")
 
-                # if "tripXevBatteryDistanceAccumulated" in self.data:
-                #   cs["Distance Accumulated"] = self.units.length(self.data.get("tripXevBatteryDistanceAccumulated", {}).get("value", 0),UnitOfLength.KILOMETERS)
-
                 if "xevBatteryChargerVoltageOutput" in self.data:
                     cs["Charging Voltage"] = float(self.data.get("xevBatteryChargerVoltageOutput", {}).get("value", 0))
                     ch_volt = cs["Charging Voltage"]
@@ -366,9 +363,8 @@ class CarSensor(
                     cs["Charging Amperage"] = float(self.data.get("xevBatteryChargerCurrentOutput", {}).get("value", 0))
                     ch_amps = cs["Charging Amperage"]
 
-                # Returning 0 in else - to prevent attribute from not displaying
+                # Calculate charging power in kW
                 if "xevBatteryChargerVoltageOutput" in self.data and "xevBatteryChargerCurrentOutput" in self.data:
-
                     # Get Battery Io Current for DC Charging calculation
                     if "xevBatteryIoCurrent" in self.data:
                         batt_amps = float(self.data.get("xevBatteryIoCurrent", {}).get("value", 0))

@@ -45,8 +45,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up FordPass from a config entry."""
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Ford Pass from a config entry."""
     user = entry.data[CONF_USERNAME]
     password = entry.data[CONF_PASSWORD]
     vin = entry.data[VIN]
@@ -80,7 +80,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "fordpass_options_listener": fordpass_options_listener
     }
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(
+        entry, ["device_tracker", "sensor", "switch", "lock"]
+    )
 
     async def async_refresh_status_service(service_call):
         await hass.async_add_executor_job(

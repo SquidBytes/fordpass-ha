@@ -94,7 +94,7 @@ class Vehicle:
 
         }
 
-        _LOGGER.debug(data)
+        _LOGGER.debug(f"Token data: {data}")
         headers = {
             **loginHeaders,
         }
@@ -285,7 +285,7 @@ class Vehicle:
         if self.save_token:
             if os.path.isfile(self.token_location):
                 data = self.read_token()
-                _LOGGER.debug(data)
+                _LOGGER.debug(f"Token data: {data}")
                 self.token = data["access_token"]
                 self.refresh_token = data["refresh_token"]
                 self.expires_at = data["expiry_date"]
@@ -405,7 +405,7 @@ class Vehicle:
         if r.status_code == 200:
             result = r.json()
             _LOGGER.debug(r.status_code)
-            _LOGGER.debug(r.text)
+            _LOGGER.debug(f"Auto Token response? {r.text}")
             self.auto_token = result["access_token"]
             return result
         return False
@@ -422,7 +422,7 @@ class Vehicle:
             "auth-token": self.token,
             "Application-Id": self.region,
         }
-        _LOGGER.debug(self.auto_token)
+        _LOGGER.debug(f"Auto Token: {self.auto_token}")
 
         if NEW_API:
             headers = {
@@ -434,7 +434,7 @@ class Vehicle:
                 f"{AUTONOMIC_URL}/telemetry/sources/fordpass/vehicles/{self.vin}", params=params, headers=headers
             )
             if r.status_code == 200:
-                _LOGGER.debug(r.text)
+                #_LOGGER.debug(f"New API response? {r.text}")
                 result = r.json()
                 return result
         else:
@@ -482,7 +482,7 @@ class Vehicle:
             result = response.json()
             return result["result"]["messages"]
             # _LOGGER.debug(result)
-        _LOGGER.debug(response.text)
+        _LOGGER.debug(f"Message response: {response.text}")
         if response.status_code == 401:
             self.auth()
         response.raise_for_status()
@@ -513,7 +513,7 @@ class Vehicle:
 
             _LOGGER.debug(result)
             return result
-        _LOGGER.debug(response.text)
+        _LOGGER.debug(f"Vehicle response: {response.text}")
         if response.status_code == 401:
             self.auth()
         response.raise_for_status()
@@ -571,7 +571,7 @@ class Vehicle:
         response = self.__make_request(
             "PUT", f"{GUARD_URL}/guardmode/v1/{self.vin}/session", None, None
         )
-        _LOGGER.debug(response.text)
+        _LOGGER.debug(f"Guard response: {response.text}")
         return response
 
     def disable_guard(self):
@@ -582,7 +582,7 @@ class Vehicle:
         response = self.__make_request(
             "DELETE", f"{GUARD_URL}/guardmode/v1/{self.vin}/session", None, None
         )
-        _LOGGER.debug(response.text)
+        _LOGGER.debug(f"Guard disableresponse: {response.text}")
         return response
 
     def request_update(self, vin=""):
@@ -700,3 +700,287 @@ class Vehicle:
                 return self.__poll_status(url, result["commandId"])
             return False
         return False
+    
+    def ev_start_charge(self):
+        """Start EV Charge"""
+        return self.__electrification_command("CANCEL")
+
+    def ev_stop_charge(self):
+        """Stop EV Charge"""
+        return self.__electrification_command("PAUSE")
+
+    def ev_energy_transfer_logs(self):
+        """Get EV Energy Transfer Logs"""
+        headers = {
+            **apiHeaders,
+            "Application-Id": self.region,
+            "authorization": f"Bearer {self.auto_token}"
+        }
+        r = session.get(
+            f"{GUARD_URL}/electrification/experiences/v1/devices/{self.vin}/energy-transfer-logs?maxRecords=20", # Tested up to 100 on the URL but I'm not sure if it returns the number or the default. It only returns the default for me, but its the beginning of the year.
+            headers=headers
+        )
+        if r.status_code == 200:
+            _LOGGER.debug(f"EV Energy Transfer Logs: {r.status_code}")
+            response = r.json()
+            _LOGGER.debug(response)
+            return response
+        return False
+    
+    def __rcc_status(self, vin=""):
+        """Request Profile RCC Status"""
+        if vin:
+            vin = vin
+        else:
+            vin = self.vin
+        headers = {
+            **apiHeaders,
+            "Application-Id": self.region,
+            "authorization": f"Bearer {self.auto_token}"
+        }
+        data = {
+            "vin": vin
+        }
+
+        r = session.post(
+            f"{GUARD_URL}/rcc/profile/status",
+            headers=headers,
+            data=json.dumps(data)
+        )
+
+        if r.status_code == 200:
+            _LOGGER.debug(f"RCC Status: {r.status_code}")
+            response = r.json()
+            return response
+        _LOGGER.debug(f"RCC Status: {r.status_code}")
+        return False
+    
+    def __rcc_update(self, vin="", hvac=22, seats="Off", defrost="Off"):
+        """ Remote control commands for AC, Heated / Ventilated Seats, Steering Wheel, Defroster, etc.
+        hvac is in Celsius. Vehicle will need to be on and I'm not sure what will happen if it's off."""
+        hvac_min = 16
+        hvac_max = 30
+        seats_mode = ["Heated2", "Cooled2", "Off"]
+        defrost_mode = ["Off", "On"]
+        
+        if vin:
+            vin = vin
+        else:
+            vin = self.vin
+
+        if hvac:
+            if hvac < hvac_min or hvac > hvac_max:
+                _LOGGER.debug(f"HVAC value must be between {hvac_min} and {hvac_max}")
+                return False
+            hvac = f"{hvac}_0"
+        if seats:
+            if seats not in seats_mode:
+                _LOGGER.debug(f"Seats mode must be one of {seats_mode}")
+                return False
+            seats = f"{seats}"
+        if defrost:
+            if defrost not in defrost_mode:
+                _LOGGER.debug(f"Defrost mode must be one of {defrost_mode}")
+                return False
+            defrost = f"{defrost}"
+
+        headers = {
+            **apiHeaders,
+            "Application-Id": self.region,
+            "authorization": f"Bearer {self.auto_token}"
+        }
+
+        data = {
+            "crccStateFlag": "On",
+            "userPreferences": [
+                {
+                "preferenceType": "RccHeatedWindshield_Rq",
+                "preferenceValue": f"{defrost}"
+                },
+                {
+                "preferenceType": "RccRearDefrost_Rq",
+                "preferenceValue": f"{defrost}"
+                },
+                {
+                "preferenceType": "RccHeatedSteeringWheel_Rq",
+                "preferenceValue": f"{defrost}"
+                },
+                {
+                "preferenceType": "RccLeftFrontClimateSeat_Rq",
+                "preferenceValue": f"{seats}"
+                },
+                {
+                "preferenceType": "RccLeftRearClimateSeat_Rq",
+                "preferenceValue": f"{seats}"
+                },
+                {
+                "preferenceType": "RccRightFrontClimateSeat_Rq",
+                "preferenceValue": f"{seats}"
+                },
+                {
+                "preferenceType": "RccRightRearClimateSeat_Rq",
+                "preferenceValue": f"{seats}"
+                },
+                {
+                "preferenceType": "SetPointTemp_Rq",
+                "preferenceValue": f"{hvac}"
+                }
+            ],
+            "vin": vin
+            }
+        
+        r = session.put(
+            f"{GUARD_URL}/rcc/profile/update",
+            headers=headers,
+            data=json.dumps(data)
+        )
+
+        if r.status_code == 200:
+            _LOGGER.debug(f"RCC Update: {r.status_code}")
+            response = r.json()
+            _LOGGER.debug(response)
+            return True
+        _LOGGER.debug(f"RCC Update: {r.status_code}")
+        return False
+
+    def zone_lighting_activation(self, vin="", power="On"):
+        """
+        Activate or deactivate zone lighting on the vehicle. I believe this is exclusive to the F-150 Lightning.
+        """
+        if vin:
+            vin = vin
+        else:
+            vin = self.vin
+
+        headers = {
+            **apiHeaders,
+            "Application-Id": self.region,
+            "authorization": f"Bearer {self.auto_token}"
+        }
+
+        data = {
+            "vin": vin
+        }
+
+        if power == "On":
+            r = session.put(
+                f"https://api.mps.ford.com/vehicles/vpfi/zonelightingactivation",
+                headers=headers,
+                data=json.dumps(data)
+            )
+
+            if r.status_code == 200:
+                _LOGGER.debug(f"Zone Lighting Activation: {r.status_code}")
+                response = r.json()
+                _LOGGER.debug(response)
+                return response
+            
+        if power == "Off":
+            r = session.delete(
+                f"https://api.mps.ford.com/vehicles/vpfi/zonelightingactivation",
+                headers=headers,
+                data=json.dumps(data)
+            )   
+            if r.status_code == 200:
+                _LOGGER.debug(f"Zone Lighting Activation: {r.status_code}")
+                response = r.json()
+                _LOGGER.debug(response)
+                return response
+    
+    def zone_lighting_zone(self, vin="", zone=None, action=True):
+        """
+        Activate or deactivate a specific zone lighting on the vehicle. I believe this is exclusive to the F-150 Lightning.
+        """
+        if vin:
+            vin = vin
+        else:
+            vin = self.vin
+
+        headers = {
+            **apiHeaders,
+            "Application-Id": self.region,
+            "authorization": f"Bearer {self.auto_token}"
+        }
+
+        zones = {"Front": 1, "Rear": 2, "Driver": 3, "Passenger": 4, "All": 0}
+        if zone not in zones:
+            _LOGGER.debug(f"Zone must be one of {zones}")
+            return False
+        data = {
+            "vin": vin,
+        }
+
+        if action:
+            r = session.put(
+                f"https://api.mps.ford.com/vehicles/vpfi/{zone}/zonelightingzone",
+                headers=headers,
+                data=json.dumps(data)
+            )
+            if r.status_code == 200:
+                _LOGGER.debug(f"Zone Lighting Power Zone {zone}: {r.status_code}")
+                response = r.json()
+                _LOGGER.debug(response)
+                return response
+        if not action:
+            r = session.delete(
+                f"https://api.mps.ford.com/vehicles/vpfi/{zone}/zonelightingzone",
+                headers=headers,
+                data=json.dumps(data)
+            )
+            if r.status_code == 200:
+                _LOGGER.debug(f"Zone Lighting Power Zone {zone}: {r.status_code}")
+                response = r.json()
+                _LOGGER.debug(response)
+                return response
+
+
+    def __electrification_command(self, command):
+        """Send command to the new Electrification Command endpoint"""
+        self.__acquire_token()
+        headers = {
+            **apiHeaders,
+            "Application-Id": self.region,
+            "authorization": f"Bearer {self.auto_token}"
+        }
+
+        r = session.post(
+            f"{GUARD_URL}/electrification/experiences/v1/vehicles/{self.vin}/global-charge-command/{command}",
+            headers=headers
+            )
+
+        _LOGGER.debug("EV Charge command")
+        _LOGGER.debug(r.status_code)
+        _LOGGER.debug(r.text)
+        if r.status_code == 202:
+            _LOGGER.debug(f"EV Charge command Status: {r.status_code}")
+            response = r.json()
+            correlationId = response["correlationId"]
+            if correlationId is not None:
+                _LOGGER.debug(f"EV Charge command Correlation ID: {correlationId}")
+                return True
+            _LOGGER.debug(f"EV Charge command Correlation ID: {correlationId}")
+            return False
+        _LOGGER.debug(f"EV Charge command Status code not 202: {r.status_code}")
+        return False
+
+    def __electrification_transfer_status(self):
+        """Energy Transfer Status"""
+        self.__acquire_token()
+        headers = {
+            **apiHeaders,
+            "Application-Id": self.region,
+            "authorization": f"Bearer {self.auto_token}"
+        }
+        r = session.get(
+            f"{GUARD_URL}/electrification/experiences/v1/vehicles/{self.vin}/energy-transfer-status",
+            headers=headers
+        )
+        _LOGGER.debug("EV Transfer Status")
+        _LOGGER.debug(r.status_code)
+        _LOGGER.debug(r.text)
+        if r.status_code == 200:
+            _LOGGER.debug(f"EV Transfer Status: {r.status_code}")
+            response = r.json()
+            return response
+        return False
+

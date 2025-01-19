@@ -12,6 +12,7 @@
   "loggers": ["custom_components.fordpass"],
   "requirements": [],
   "ssdp": [],
-  "version": "0.1.70",
-  "zeroconf": []
+  "version": "1.70.0",
+  "zeroconf": [],
+  "domains": ["binary_sensor", "device_tracker", "sensor", "switch", "lock"]
 }

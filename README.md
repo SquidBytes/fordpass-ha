@@ -13,9 +13,13 @@
 > To prevent this issue, we will be moving the token file outside of the FordPass directory. This change will ensure that the token is preserved during updates. This will require reconfiguration of your setup.
 > Please see the Installation section, or the Wiki for help.
 
-#### Please be aware that there may be issues or disruptions during this process.
+#### Please be aware that there seems to be constant issues with the API and reports of accounts being locked out again.
+
+It is recommended to avoid over using these Home Assistant switches and periodically use the official FordPass app.
 
 If you have any questions or concerns, please either open a new issue or comment on an existing issue related to yours.
+
+Keep in mind that we are not available to help with every issue in a timely manner. We will do our best to help where we can.
 
 Thank you,
 

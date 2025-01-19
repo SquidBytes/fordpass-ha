@@ -67,8 +67,18 @@ SENSORS = {
 }
 
 SWITCHES = {
-    "ignition": {"icon": "hass:power"},
-    # "guardmode": {"icon": "mdi:shield-key"}
+    "ignition": {"icon": "mdi:engine"},
+    #"guardmode": {"icon": "mdi:shield-car"},
+    "charging": {"icon": "mdi:ev-station"},
+    "zone_lighting": {"icon": "mdi:lightning-bolt"},
+    "zone_front": {"icon": "mdi:car-light-high"},
+    "zone_rear": {"icon": "mdi:car-light-high"},
+    "zone_driver": {"icon": "mdi:car-door"},
+    "zone_passenger": {"icon": "mdi:car-door"},
+    "zone_all": {"icon": "mdi:flash"},
+    "defrost": {"icon": "mdi:car-defrost-front"},
+    "heated_seats": {"icon": "mdi:car-seat-heater"},
+    "cooled_seats": {"icon": "mdi:car-seat-cooler"}
 }
 
 WINDOW_POSITIONS = {
