@@ -711,22 +711,49 @@ class Vehicle:
 
     def ev_energy_transfer_logs(self):
         """Get EV Energy Transfer Logs"""
+        # Ensure we have a valid token
+        self.__acquire_token()
+        
         headers = {
             **apiHeaders,
             "Application-Id": self.region,
             "authorization": f"Bearer {self.auto_token}"
         }
-        r = session.get(
-            f"{GUARD_URL}/electrification/experiences/v1/devices/{self.vin}/energy-transfer-logs?maxRecords=20", # Tested up to 100 on the URL but I'm not sure if it returns the number or the default. It only returns the default for me, but its the beginning of the year.
-            headers=headers
-        )
-        if r.status_code == 200:
-            _LOGGER.debug(f"EV Energy Transfer Logs: {r.status_code}")
-            response = r.json()
-            _LOGGER.debug(response)
-            return response
-        return False
-    
+        
+        try:
+            r = session.get(
+                f"{GUARD_URL}/electrification/experiences/v1/devices/{self.vin}/energy-transfer-logs?maxRecords=20",
+                headers=headers,
+                timeout=30
+            )
+            
+            _LOGGER.debug(f"EV Energy Transfer Logs request status: {r.status_code}")
+            
+            if r.status_code == 200:
+                response = r.json()
+                _LOGGER.debug(f"EV Energy Transfer Logs response: {response}")
+                return response
+            elif r.status_code == 401:
+                # Token might be expired, try refreshing
+                self.refresh_token_func(self.refresh_token)
+                # Retry the request once
+                r = session.get(
+                    f"{GUARD_URL}/electrification/experiences/v1/devices/{self.vin}/energy-transfer-logs?maxRecords=20",
+                    headers={**headers, "authorization": f"Bearer {self.auto_token}"},
+                    timeout=30
+                )
+                if r.status_code == 200:
+                    return r.json()
+            
+            _LOGGER.error(f"Failed to get charge logs. Status code: {r.status_code}")
+            if r.content:
+                _LOGGER.debug(f"Error response: {r.content}")
+            return False
+            
+        except Exception as e:
+            _LOGGER.error(f"Exception getting charge logs: {str(e)}")
+            return False
+
     def __rcc_status(self, vin=""):
         """Request Profile RCC Status"""
         if vin:

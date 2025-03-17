@@ -15,3 +15,13 @@ reload:
 poll_api:
   name: Poll API
   description: "Manually poll API for data update (Warning: doing this too often could result in a ban)"
+get_charge_logs:
+  name: Get Charge Logs
+  description: "Retrieve charging history logs for electric vehicles"
+  fields:
+    vin:
+      name: Vin
+      description: "Parse a vin number to only get logs for the specified vehicle (Default gets logs for all added vehicles)"
+      example: "1C4GJ25342B521742"
+      selector:
+        text:

@@ -8,7 +8,7 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -107,11 +107,36 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         await asyncio.gather(*reload_tasks)
 
+    async def async_get_charge_logs_service(service_call):
+        """Handle getting charge logs service call."""
+        vin = service_call.data.get("vin", "")
+        coordinator = hass.data[DOMAIN][entry.entry_id][COORDINATOR]
+        
+        try:
+            logs = await hass.async_add_executor_job(
+                coordinator.vehicle.ev_energy_transfer_logs
+            )
+            
+            if logs:
+                # Store the logs in hass.data for potential retrieval
+                hass.data[DOMAIN][entry.entry_id]["charge_logs"] = logs
+                _LOGGER.debug("Successfully retrieved charge logs: %s", logs)
+                return logs
+            else:
+                _LOGGER.warning("No charge logs retrieved or vehicle doesn't support charging logs")
+                return None
+                
+        except Exception as ex:
+            _LOGGER.error("Error retrieving charge logs: %s", str(ex))
+            raise HomeAssistantError("Failed to retrieve charge logs") from ex
+
+    # Register all services
     hass.services.async_register(
         DOMAIN,
         "refresh_status",
         async_refresh_status_service,
     )
+    
     hass.services.async_register(
         DOMAIN,
         "clear_tokens",
@@ -128,6 +153,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         DOMAIN,
         "poll_api",
         poll_api_service
+    )
+
+    # Register our new charge logs service
+    hass.services.async_register(
+        DOMAIN,
+        "get_charge_logs",
+        async_get_charge_logs_service
     )
 
     return True
