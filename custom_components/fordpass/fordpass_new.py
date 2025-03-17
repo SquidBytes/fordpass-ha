@@ -81,20 +81,16 @@ class Vehicle:
         return urlsafe_b64encode(data).rstrip(b'=')
 
     def generate_tokens(self, urlstring, code_verifier):
+        """Exchange the authorization code for tokens"""
         code_new = urlstring.replace("fordapp://userauthorized/?code=", "")
-        print(code_new)
-        print(self.country_code)
-        print(code_verifier)
         data = {
             "client_id": "09852200-05fd-41f6-8c21-d36d3497dc64",
             "grant_type": "authorization_code",
             "code_verifier": code_verifier,
             "code": code_new,
             "redirect_uri": "fordapp://userauthorized"
-
         }
 
-        _LOGGER.debug(f"Token data: {data}")
         headers = {
             **loginHeaders,
         }
@@ -104,8 +100,6 @@ class Vehicle:
             data=data,
             verify=False
         )
-        print(req.status_code)
-        print(req.text)
         return self.generate_fulltokens(req.json())
 
     def generate_fulltokens(self, token):
@@ -711,47 +705,53 @@ class Vehicle:
 
     def ev_energy_transfer_logs(self):
         """Get EV Energy Transfer Logs"""
-        # Ensure we have a valid token
-        self.__acquire_token()
-        
-        headers = {
-            **apiHeaders,
-            "Application-Id": self.region,
-            "authorization": f"Bearer {self.auto_token}"
-        }
-        
         try:
-            r = session.get(
-                f"{GUARD_URL}/electrification/experiences/v1/devices/{self.vin}/energy-transfer-logs?maxRecords=20",
-                headers=headers,
-                timeout=30
-            )
+            # Debug apiHeaders
+            _LOGGER.debug("EV CHARGE")
+            _LOGGER.debug("apiHeaders content: %s", apiHeaders)
+            _LOGGER.debug("apiHeaders type: %s", type(apiHeaders))
             
-            _LOGGER.debug(f"EV Energy Transfer Logs request status: {r.status_code}")
+            # Ensure we have a valid token
+            self.__acquire_token()
             
-            if r.status_code == 200:
-                response = r.json()
-                _LOGGER.debug(f"EV Energy Transfer Logs response: {response}")
-                return response
-            elif r.status_code == 401:
-                # Token might be expired, try refreshing
-                self.refresh_token_func(self.refresh_token)
-                # Retry the request once
+            # Create headers separately to debug
+            try:
+                base_headers = dict(apiHeaders)  # Convert to dict if it isn't already
+                headers = {
+                    **base_headers,
+                    "Application-Id": self.region,
+                    "authorization": f"Bearer {self.auto_token}"
+                }
+                _LOGGER.debug("Final headers: %s", headers)
+            except Exception as header_error:
+                _LOGGER.error("Error creating headers: %s", str(header_error))
+                _LOGGER.debug("Header error details:", exc_info=True)
+                return False
+            
+            # Make the request
+            try:
                 r = session.get(
                     f"{GUARD_URL}/electrification/experiences/v1/devices/{self.vin}/energy-transfer-logs?maxRecords=20",
-                    headers={**headers, "authorization": f"Bearer {self.auto_token}"},
+                    headers=headers,
                     timeout=30
                 )
+                
+                _LOGGER.debug(f"Request URL: {r.url}")
+                _LOGGER.debug(f"Request status code: {r.status_code}")
+                
                 if r.status_code == 200:
-                    return r.json()
-            
-            _LOGGER.error(f"Failed to get charge logs. Status code: {r.status_code}")
-            if r.content:
-                _LOGGER.debug(f"Error response: {r.content}")
-            return False
+                    response = r.json()
+                    _LOGGER.debug(f"Response content: {response}")
+                    return response
+                    
+            except Exception as request_error:
+                _LOGGER.error("Error making request: %s", str(request_error))
+                _LOGGER.debug("Request error details:", exc_info=True)
+                return False
             
         except Exception as e:
-            _LOGGER.error(f"Exception getting charge logs: {str(e)}")
+            _LOGGER.error("Exception in ev_energy_transfer_logs: %s", str(e))
+            _LOGGER.debug("Full exception details:", exc_info=True)
             return False
 
     def __rcc_status(self, vin=""):

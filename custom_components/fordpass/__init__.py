@@ -109,26 +109,42 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def async_get_charge_logs_service(service_call):
         """Handle getting charge logs service call."""
-        vin = service_call.data.get("vin", "")
-        coordinator = hass.data[DOMAIN][entry.entry_id][COORDINATOR]
-        
         try:
+            vin = service_call.data.get("vin", "")
+            coordinator = hass.data[DOMAIN][entry.entry_id][COORDINATOR]
+            
+            _LOGGER.debug("Starting charge logs service call")
+            _LOGGER.debug("VIN: %s", vin)
+            
             logs = await hass.async_add_executor_job(
                 coordinator.vehicle.ev_energy_transfer_logs
             )
             
+            _LOGGER.debug("Received logs: %s", logs)
+            
             if logs:
-                # Store the logs in hass.data for potential retrieval
-                hass.data[DOMAIN][entry.entry_id]["charge_logs"] = logs
-                _LOGGER.debug("Successfully retrieved charge logs: %s", logs)
-                return logs
+                result = {
+                    "charge_logs": logs,
+                    "success": True,
+                    "message": "Successfully retrieved charge logs"
+                }
+                _LOGGER.debug("Returning successful result: %s", result)
+                return result
             else:
-                _LOGGER.warning("No charge logs retrieved or vehicle doesn't support charging logs")
-                return None
+                result = {
+                    "success": False,
+                    "message": "No charge logs retrieved or vehicle doesn't support charging logs"
+                }
+                _LOGGER.debug("Returning failed result: %s", result)
+                return result
                 
         except Exception as ex:
-            _LOGGER.error("Error retrieving charge logs: %s", str(ex))
-            raise HomeAssistantError("Failed to retrieve charge logs") from ex
+            _LOGGER.error("Service error: %s", str(ex))
+            _LOGGER.debug("Service error details:", exc_info=True)
+            return {
+                "success": False,
+                "message": f"Error: {str(ex)}"
+            }
 
     # Register all services
     hass.services.async_register(
