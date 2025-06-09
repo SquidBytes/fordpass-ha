@@ -4,8 +4,10 @@
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/itchannel)
 
+<!-- Wrote up a little note thing for the breaking change. Not sure if you want to use it but I figured this could be a good start or something since I was already editing the readme. -->
 > [!WARNING]
 > # Breaking Change
+<<<<<<< HEAD
 > There is a new token obtaining system.
 > 
 > The token used by this integration is currently removed whenever the integration is updated. With this 1.70 update, the token will be wiped during every update, requiring users to manually add the token during the initial setup.
@@ -16,6 +18,30 @@
 #### Please be aware that there seems to be constant issues with the API and reports of accounts being locked out again.
 
 It is recommended to avoid over using these Home Assistant switches and periodically use the official FordPass app.
+=======
+> This update changes how tokens are handled, in order to prevent deletion during future updates or changes. Tokens are now handled by the HA storage system and will persist updates and reboots properly. 
+This change will ensure that the token is preserved during updates. This will require reconfiguration of your setup.
+> Please see the Installation section, or the Wiki for help.
+
+<!-- Tried to update the update with the new information -->
+> [!IMPORTANT]  
+> # FordConnect API
+>
+> Dear FordPass Integration Users,
+> As you know there have been many challenges with the Ford API. We > are actively working on developments but please note that these developments **will take time.**
+> - **FordConnect API:** Ford has enabled developer accounts and released their `FordConnect API`. However, this API and its documentation currently **lack many data points** or **are not fully >implemented**. It is presently supported only in North America. 
+> - **FordPass APP:** Ford has also released their refreshed `FordPass App`. This refreshed app includes some new features while also >removing certain items, similar to the FordConnect API.
+> 
+> It is important to understand that our integration depends on the data provided by either the `FordConnect API` or the `FordPass App`, >which may limit some functionalities.
+
+## Future Updates:
+
+- **Enhancements:** We are committed to enhancing the integration and ensuring its functionality. However, we both have limited time to allocate to this effort.
+
+- **Implementation:** We are actively working on integrating the new `FordConnect API` to ensure users who can access it will benefit from its features. At the same time, we will maintain functionality for users who are unable to use this new API.
+
+#### Please be aware that there may be issues or disruptions during this process.
+>>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 
 If you have any questions or concerns, please either open a new issue or comment on an existing issue related to yours.
 
@@ -52,6 +78,11 @@ Follow the instructions on the [Wiki](https://github.com/itchannel/fordpass-ha/w
 ## Usage
 Your car must have the lastest onboard modem functionality and have registered/authorised the fordpass application
 
+<<<<<<< HEAD
+=======
+## Services
+<!-- I haven't looked into these services, but it might be easier to maintain a Wiki with the various services compared to the README. Just a thought. -->
+>>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 ### Car Refresh
 I have added a service to poll the car for updates, due to the battery drain I have left this up to you to set the interval. The service to be called is "refresh_status" and can be accessed in home assistant using "fordpas.refresh_status". 
 
@@ -59,6 +90,12 @@ Optionally you can add the "vin" parameter followed by your VIN number to only r
 
 **This will take up to 5 mins to update from the car once the service has been run**
 
+<<<<<<< HEAD
+=======
+###
+Click on options and choose imperial or metric to display in km/miles. Takes effect on next restart of home assistant. Default is Metric
+<!-- These might need to be updated since its now different -->
+>>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 ### Clear Tokens
 If you are experiencing any sign in issues, please trying clearing your tokens using the "clear_tokens" service call.
 
@@ -69,6 +106,14 @@ This service allows you to manually refresh/poll the API without waiting the set
 ### Currently Working
 **Sensors may change as the integration is being developed**
 
+<<<<<<< HEAD
+=======
+## Sensors
+### Currently Working
+**Sensors may change as the integration is being developed**
+<!-- Keeping this the same, but it will probably change and update alongside Fordconnect and the new app features -->
+
+>>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 - Fuel Level
 - Odometer
 - Lock/Unlock
