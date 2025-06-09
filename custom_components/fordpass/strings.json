@@ -27,8 +27,6 @@
         },
         "data_description": {
           "username": "If using a mobile instead of email please enter your number include + and the country code (+99123456789)"
-<<<<<<< HEAD
-=======
         }
       },
       "add_vehicle": {
@@ -44,7 +42,6 @@
         "data": {
           "url": "URL",
           "tokenstr": "Token"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
         }
       },
       "vehicle": {

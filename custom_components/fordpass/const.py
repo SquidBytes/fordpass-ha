@@ -70,23 +70,8 @@ SENSORS = {
 }
 
 SWITCHES = {
-<<<<<<< HEAD
-    "ignition": {"icon": "mdi:engine"},
-    #"guardmode": {"icon": "mdi:shield-car"},
-    "charging": {"icon": "mdi:ev-station"},
-    "zone_lighting": {"icon": "mdi:lightning-bolt"},
-    "zone_front": {"icon": "mdi:car-light-high"},
-    "zone_rear": {"icon": "mdi:car-light-high"},
-    "zone_driver": {"icon": "mdi:car-door"},
-    "zone_passenger": {"icon": "mdi:car-door"},
-    "zone_all": {"icon": "mdi:flash"},
-    "defrost": {"icon": "mdi:car-defrost-front"},
-    "heated_seats": {"icon": "mdi:car-seat-heater"},
-    "cooled_seats": {"icon": "mdi:car-seat-cooler"}
-=======
     "ignition": {"icon": "hass:power"},
     # "guardmode": {"icon": "mdi:shield-key"}
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 }
 
 WINDOW_POSITIONS = {
@@ -112,11 +97,7 @@ REGIONS = {
     },
     "UK&Europe": {
         "region": "1E8C7794-FF5F-49BC-9596-A1E0C86C5B19",
-<<<<<<< HEAD
-        "locale": "EN-GB",
-=======
         "locale": "en-GB",
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
         "locale_short": "IE",  # Temp fix
         "locale_url": "https://login.ford.co.uk",
         "countrycode": "GBR"

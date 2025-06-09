@@ -2,15 +2,6 @@
     "config": {
         "abort": {
             "already_configured": "Account is al geconfigureerd",
-<<<<<<< HEAD
-            "no_vehicles": "Er zijn geen voertuigen op dit account of ze zijn allemaal al geconfigureerd"
-        },
-        "error": {
-            "cannot_connect": "Kan geen verbinding maken",
-            "invalid_auth": "Onjuiste logingegevens",
-            "invalid_vin": "VIN is niet bekend onder opgegeven account",
-            "unknown": "Onbekende fout"
-=======
             "no_vehicles": "Geen niet-geconfigureerde voertuigen gevonden op dit account"
         },
         "error": {
@@ -20,7 +11,6 @@
             "invalid_mobile": "Mobiele nummer als gebruikersnaam moet worden opgegeven bij gebruik van Zuid-Afrikaanse regio",
             "invalid_token": "Token is ongeldig, controleer of je het juiste token hebt gekopieerd uit de Location header, het moet beginnen met fordapp://",
             "unknown": "Onverwachte fout"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
         },
         "step": {
             "user": {
@@ -35,11 +25,6 @@
                 "description": "Stel een nieuw FordPass account in",
                 "data": {
                     "password": "FordPass wachtwoord",
-<<<<<<< HEAD
-                    "username": "FordPass gebruikersnaam (e-mailadres)",
-                    "vin": "VIN",
-                    "region" : "FordPass regio"
-=======
                     "username": "FordPass gebruikersnaam (Email)",
                     "region": "FordPass regio"
                 },
@@ -60,16 +45,10 @@
                 "data": {
                     "url": "URL",
                     "tokenstr": "Token"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
                 }
             },
             "vehicle": {
                 "title": "Selecteer voertuig om toe te voegen",
-<<<<<<< HEAD
-                "description": "Alleen voertuigen die niet al zijn toegevoegd zijn zichtbaar",
-                "data": {
-                    "vin": "VIN"
-=======
                 "description": "Alleen voertuigen die momenteel niet zijn toegevoegd worden getoond",
                 "data": {
                     "vin": "VIN"
@@ -80,7 +59,6 @@
                 "description": "Voer je VIN nummer handmatig in omdat er geen voertuigen automatisch gevonden konden worden.",
                 "data": {
                     "vin": "VIN nummer voor voertuig"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
                 }
             }
         }
@@ -105,11 +83,7 @@
             "fields": {
                 "vin": {
                     "name": "VIN",
-<<<<<<< HEAD
-                    "description": "Voer een chassisnummer in om alleen het opgegeven voertuig te vernieuwen (standaard vernieuwt alle toegevoegde voertuigen)"
-=======
                     "description": "Voer een VIN nummer in om alleen het opgegeven voertuig te vernieuwen (standaard vernieuwt alle toegevoegde voertuigen)"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
                 }
             }
         },
@@ -119,11 +93,7 @@
         },
         "reload": {
             "name": "Herladen",
-<<<<<<< HEAD
-            "description": "Laad de Fordpass-integratie opnieuw"
-=======
             "description": "Laad de Fordpass integratie opnieuw"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
         },
         "poll_api": {
             "name": "Poll API",

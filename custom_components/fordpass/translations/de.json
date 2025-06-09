@@ -17,12 +17,6 @@
                 "title": "FordPass Einrichtung",
                 "description": "Wählen Sie, wie Sie FordPass einrichten möchten",
                 "data": {
-<<<<<<< HEAD
-                    "password": "FordPass Password",
-                    "username": "FordPass Username (E-Mail)",
-                    "vin": "FIN",
-                    "region" : "FordPass Region"
-=======
                     "setup_type": "Einrichtungstyp"
                 }
             },
@@ -51,16 +45,12 @@
                 "data": {
                     "url": "URL",
                     "tokenstr": "Token"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
                 }
             },
             "vehicle": {
                 "title": "Fahrzeug zum Hinzufügen auswählen",
                 "description": "Nur Fahrzeuge, die derzeit nicht hinzugefügt sind, werden angezeigt",
                 "data": {
-<<<<<<< HEAD
-                    "vin": "VIN"
-=======
                     "vin": "FIN"
                 }
             },
@@ -69,7 +59,6 @@
                 "description": "Bitte geben Sie Ihre FIN-Nummer manuell ein, da keine Fahrzeuge automatisch gefunden werden konnten.",
                 "data": {
                     "vin": "FIN-Nummer für Fahrzeug"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
                 }
             }
         }

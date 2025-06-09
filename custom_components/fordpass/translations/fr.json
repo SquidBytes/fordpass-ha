@@ -17,12 +17,6 @@
                 "title": "Configuration FordPass",
                 "description": "Choisissez comment vous voulez configurer FordPass",
                 "data": {
-<<<<<<< HEAD
-                    "password": "Mot de Passe FordPass",
-                    "username": "Utilisateur FordPass (Email)",
-                    "vin": "NIV",
-                    "region" : "Région FordPass"
-=======
                     "setup_type": "Type de configuration"
                 }
             },
@@ -51,17 +45,12 @@
                 "data": {
                     "url": "URL",
                     "tokenstr": "Token"
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
                 }
             },
             "vehicle": {
                 "title": "Sélectionner le véhicule à ajouter",
                 "description": "Seuls les véhicules non ajoutés actuellement seront affichés",
                 "data": {
-<<<<<<< HEAD
-                    "vin": "VIN"
-                }
-=======
                     "vin": "NIV"
                 }
             },
@@ -71,7 +60,6 @@
                 "data": {
                     "vin": "Numéro NIV pour le véhicule"
                 }
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
             }
         }
     },

@@ -8,10 +8,7 @@ import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_PASSWORD, CONF_URL, CONF_USERNAME
 from homeassistant.core import callback
-<<<<<<< HEAD
-=======
 from homeassistant.helpers.storage import Store
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 from base64 import urlsafe_b64encode
 
 
@@ -52,8 +49,6 @@ VIN_SCHEME = vol.Schema(
     }
 )
 
-<<<<<<< HEAD
-=======
 # Schema for adding vehicle to existing account
 ADD_VEHICLE_SCHEMA = vol.Schema(
     {
@@ -61,7 +56,6 @@ ADD_VEHICLE_SCHEMA = vol.Schema(
     }
 )
 
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 
 @callback
 def configured_vehicles(hass):
@@ -72,15 +66,6 @@ def configured_vehicles(hass):
     }
 
 
-<<<<<<< HEAD
-async def validate_token(hass: core.HomeAssistant, data):
-    _LOGGER.debug(data)
-    configPath = hass.config.path("custom_components/fordpass/" + data["username"] + "_fordpass_token.txt")
-    _LOGGER.debug(configPath)
-    vehicle = Vehicle(data["username"], "", "", data["region"], 1, configPath)
-    results = await hass.async_add_executor_job(
-        vehicle.generate_tokens,
-=======
 @callback
 def configured_accounts(hass):
     """Return a dict of configured accounts and their entry data"""
@@ -104,24 +89,17 @@ async def validate_token(hass: core.HomeAssistant, data):
     token_store = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY_PREFIX}_{data['username']}")
     vehicle = Vehicle(data["username"], "", "", data["region"], token_store, hass)
     results = await vehicle.generate_tokens(
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
         data["tokenstr"],
         data["code_verifier"]
     )
 
     if results:
         _LOGGER.debug("Getting Vehicles")
-<<<<<<< HEAD
-        vehicles = await(hass.async_add_executor_job(vehicle.vehicles))
-=======
         vehicles = await vehicle.vehicles()
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
         _LOGGER.debug(vehicles)
         return vehicles
 
 
-<<<<<<< HEAD
-=======
 async def validate_existing_account(hass: core.HomeAssistant, username, region):
     """Validate existing account and get vehicles"""
     token_store = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY_PREFIX}_{username}")
@@ -137,7 +115,6 @@ async def validate_existing_account(hass: core.HomeAssistant, username, region):
         raise CannotConnect
 
 
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect.
 
@@ -153,37 +130,16 @@ async def validate_input(hass: core.HomeAssistant, data):
         raise InvalidAuth from ex
     try:
         if result:
-<<<<<<< HEAD
-            vehicles = await(hass.async_add_executor_job(vehicle.vehicles))
-    except Exception:
-        vehicles = None
-    # except Exception as ex:
-    #     raise InvalidAuth from ex
-
-    # result3 = await hass.async_add_executor_job(vehicle.vehicles)
-    # # Disabled due to API change
-    # vinfound = False
-    # for car in result3:
-    #     if car["vin"] == data[VIN]:
-    #         vinfound = True
-    # if vinfound == False:
-    #     _LOGGER.debug("Vin not found in account, Is your VIN valid?")
-=======
             vehicles = await vehicle.vehicles()
     except Exception:
         vehicles = None
 
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
     if not result:
         _LOGGER.error("Failed to authenticate with fordpass")
         raise CannotConnect
 
     # Return info that you want to store in the config entry.
     return vehicles
-<<<<<<< HEAD
-    # return {"title": f"Vehicle ({data[VIN]})"}
-=======
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 
 
 async def validate_vin(hass: core.HomeAssistant, data):
@@ -255,10 +211,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.debug(user_input[REGION])
                 self.region = user_input[REGION]
                 self.username = user_input[CONF_USERNAME]
-<<<<<<< HEAD
-
-                return await self.async_step_token(None)
-=======
                 return await self.async_step_token(None)
             except CannotConnect:
                 errors["base"] = "cannot_connect"
@@ -346,48 +298,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 else:
                     errors["base"] = "invalid_token"
 
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
             except CannotConnect:
                 print("EXCEPT")
                 errors["base"] = "cannot_connect"
 
-<<<<<<< HEAD
-        return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors
-        )
-
-    async def async_step_token(self, user_input=None):
-        errors = {}
-
-        if user_input is not None:
-            try:
-                token = user_input["tokenstr"]
-                if self.check_token(token):
-                    user_input["region"] = self.region
-                    user_input["username"] = self.username
-                    user_input["password"] = ""
-                    user_input["code_verifier"] = self.login_input["code_verifier"]
-                    _LOGGER.debug(user_input)
-                    info = await validate_token(self.hass, user_input)
-                    self.login_input = user_input
-                    if info is None:
-                        self.vehicles = None
-                        _LOGGER.debug("NO VEHICLES FOUND")
-                    else:
-                        self.vehicles = info["userVehicles"]["vehicleDetails"]
-                    if self.vehicles is None:
-                        return await self.async_step_vin()
-                    return await self.async_step_vehicle()
-
-                else:
-                    errors["base"] = "invalid_token"
-
-            except CannotConnect:
-                print("EXCEPT")
-                errors["base"] = "cannot_connect"
-
-=======
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
         if self.region is not None:
             _LOGGER.debug("Region")
             _LOGGER.debug(self.region)
@@ -446,15 +360,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
             if vehicle:
-<<<<<<< HEAD
-                return self.async_create_entry(title=f"Vehicle ({user_input[VIN]})", data=self.login_input)
-=======
                 self.login_input[VIN] = user_input["vin"]
                 return self.async_create_entry(
                     title=f"Vehicle ({user_input[VIN]})", 
                     data=self.login_input
                 )
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 
         _LOGGER.debug(self.login_input)
         return self.async_show_form(step_id="vin", data_schema=VIN_SCHEME, errors=errors)
@@ -485,11 +395,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="vehicle",
             data_schema=vol.Schema(
-<<<<<<< HEAD
-                {vol.Required(VIN): vol.In(avaliable_vehicles)}
-=======
                 {vol.Required(VIN): vol.In(available_vehicles)}
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
             ),
             errors={}
         )
@@ -524,11 +430,7 @@ class OptionsFlow(config_entries.OptionsFlow):
             ): vol.In(DISTANCE_UNITS),
             vol.Optional(
                 DISTANCE_CONVERSION_DISABLED,
-<<<<<<< HEAD
-                default=self.config_entry.options.get(
-=======
                 default=self._config_entry.options.get(
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
                     DISTANCE_CONVERSION_DISABLED, DISTANCE_CONVERSION_DISABLED_DEFAULT
                 ),
             ): bool,
@@ -561,8 +463,4 @@ class InvalidVin(exceptions.HomeAssistantError):
 
 
 class InvalidMobile(exceptions.HomeAssistantError):
-<<<<<<< HEAD
-    """Error to no mobile specified for South African Account"""
-=======
     """Error to indicate the wrong vin"""
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542

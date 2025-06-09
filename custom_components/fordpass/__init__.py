@@ -66,9 +66,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         _LOGGER.debug("CANT GET REGION")
         region = DEFAULT_REGION
-<<<<<<< HEAD
-    coordinator = FordPassDataUpdateCoordinator(hass, user, password, vin, region, update_interval, 1)
-=======
     
     # Create token store for this user
     token_store = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY_PREFIX}_{user}")
@@ -76,7 +73,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = FordPassDataUpdateCoordinator(
         hass, user, password, vin, region, update_interval, token_store
     )
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 
     await coordinator.async_refresh()  # Get initial data
 
@@ -93,16 +89,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "fordpass_options_listener": fordpass_options_listener
     }
 
-<<<<<<< HEAD
-    await hass.config_entries.async_forward_entry_setups(
-        entry, ["device_tracker", "sensor", "switch", "lock"]
-    )
-
-    async def async_refresh_status_service(service_call):
-        await hass.async_add_executor_job(
-            refresh_status, hass, service_call, coordinator
-        )
-=======
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def async_refresh_status_service(service_call):
@@ -147,7 +133,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                             _LOGGER.warning(f"Refresh command failed for VIN: {entry_coordinator.vin}")
                     except Exception as e:
                         _LOGGER.error(f"Error during refresh for VIN {entry_coordinator.vin}: {e}")
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 
     async def async_clear_tokens_service(service_call):
         """Clear tokens for this user account"""
@@ -261,27 +246,6 @@ async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.debug("OPTIONS CHANGE")
     await hass.config_entries.async_reload(entry.entry_id)
 
-<<<<<<< HEAD
-
-def refresh_status(hass, service, coordinator):
-    """Get latest vehicle status from vehicle, actively polls the car"""
-    _LOGGER.debug("Running Service")
-    vin = service.data.get("vin", "")
-    status = coordinator.vehicle.request_update(vin)
-    if status == 401:
-        _LOGGER.debug("Invalid VIN")
-    elif status == 200:
-        _LOGGER.debug("Refresh Sent")
-
-
-def clear_tokens(hass, service, coordinator):
-    """Clear the token file in config directory, only use in emergency"""
-    _LOGGER.debug("Clearing Tokens")
-    coordinator.vehicle.clear_token()
-
-
-=======
->>>>>>> bc1b34f4b41caf7294c6c8320cc281cb3f2fc542
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
 
