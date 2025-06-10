@@ -24,6 +24,9 @@ UPDATE_INTERVAL_DEFAULT = 900
 
 COORDINATOR = "coordinator"
 
+# Storage constants
+STORAGE_VERSION = 1
+STORAGE_KEY_PREFIX = "fordpass_token"
 
 REGION = "region"
 
@@ -67,18 +70,8 @@ SENSORS = {
 }
 
 SWITCHES = {
-    "ignition": {"icon": "mdi:engine"},
-    #"guardmode": {"icon": "mdi:shield-car"},
-    "charging": {"icon": "mdi:ev-station"},
-    "zone_lighting": {"icon": "mdi:lightning-bolt"},
-    "zone_front": {"icon": "mdi:car-light-high"},
-    "zone_rear": {"icon": "mdi:car-light-high"},
-    "zone_driver": {"icon": "mdi:car-door"},
-    "zone_passenger": {"icon": "mdi:car-door"},
-    "zone_all": {"icon": "mdi:flash"},
-    "defrost": {"icon": "mdi:car-defrost-front"},
-    "heated_seats": {"icon": "mdi:car-seat-heater"},
-    "cooled_seats": {"icon": "mdi:car-seat-cooler"}
+    "ignition": {"icon": "hass:power"},
+    # "guardmode": {"icon": "mdi:shield-key"}
 }
 
 WINDOW_POSITIONS = {
@@ -104,7 +97,7 @@ REGIONS = {
     },
     "UK&Europe": {
         "region": "1E8C7794-FF5F-49BC-9596-A1E0C86C5B19",
-        "locale": "EN-GB",
+        "locale": "en-GB",
         "locale_short": "IE",  # Temp fix
         "locale_url": "https://login.ford.co.uk",
         "countrycode": "GBR"

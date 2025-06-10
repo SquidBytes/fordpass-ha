@@ -1,16 +1,13 @@
 ## **Changelog**
+### Version 1.80 (WIP only update if you like living on the edge!)
+- Token storage moved to HA stores (BREAKING CHANGE!! will require reauth)
+- Ability to add other vehicles from account without reauthenticating
+- Tokens are now reused across vehicles on same account
+- Fixed async error for status refresh
+- Fixed switch status when remote starting
+- Updated translations
 ### Version 1.70
-- New config flow to allow for a user to generate a token in their browser then enter into the application, bypasses WAF.
-- Switches should now only show for vehicles that support them
-- New Switches for supported vehicles:
-  - Climate Control
-  - Defrost
-  - Heated Seats
-  - Cooled Seats
-  - Zone Lighting
-- **New Switch for EV's:**
-  - **Charge Start**
-  - **Charge Stop**
+- New config flow to allow for a user to generate a token in their browser then enter into the application, bypasses WAF. 
 ### Version 1.69
 - Versioning issue 1.69 is 1.70
 ### Version 1.68

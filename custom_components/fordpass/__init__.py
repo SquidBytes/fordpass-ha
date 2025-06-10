@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.helpers.storage import Store
 
 from .const import (
     CONF_DISTANCE_UNIT,
@@ -28,7 +29,9 @@ from .const import (
     VIN,
     UPDATE_INTERVAL,
     UPDATE_INTERVAL_DEFAULT,
-    COORDINATOR
+    COORDINATOR,
+    STORAGE_VERSION,
+    STORAGE_KEY_PREFIX,
 )
 from .fordpass_new import Vehicle
 
@@ -63,7 +66,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         _LOGGER.debug("CANT GET REGION")
         region = DEFAULT_REGION
-    coordinator = FordPassDataUpdateCoordinator(hass, user, password, vin, region, update_interval, 1)
+    
+    # Create token store for this user
+    token_store = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY_PREFIX}_{user}")
+    
+    coordinator = FordPassDataUpdateCoordinator(
+        hass, user, password, vin, region, update_interval, token_store
+    )
 
     await coordinator.async_refresh()  # Get initial data
 
@@ -80,19 +89,57 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "fordpass_options_listener": fordpass_options_listener
     }
 
-    await hass.config_entries.async_forward_entry_setups(
-        entry, ["device_tracker", "sensor", "switch", "lock"]
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def async_refresh_status_service(service_call):
-        await hass.async_add_executor_job(
-            refresh_status, hass, service_call, coordinator
-        )
+        """Handle refresh status for specific VIN or all vehicles"""
+        target_vin = service_call.data.get("vin", "")
+        
+        if target_vin:
+            # Refresh specific vehicle
+            _LOGGER.debug(f"Refreshing status for VIN: {target_vin}")
+            try:
+                # Use the async request_update method directly
+                result = await coordinator.vehicle.request_update(target_vin)
+                if result:
+                    _LOGGER.debug("Refresh command succeeded, updating coordinator data")
+                    # Wait a moment for the vehicle to process the command
+                    await asyncio.sleep(2)
+                    # Force refresh the coordinator data
+                    await coordinator.async_request_refresh()
+                else:
+                    _LOGGER.warning("Refresh command failed")
+            except Exception as e:
+                _LOGGER.error(f"Error during refresh: {e}")
+        else:
+            # Refresh all vehicles for this account
+            all_entries = hass.config_entries.async_entries(DOMAIN)
+            current_username = entry.data[CONF_USERNAME]
+            
+            for config_entry in all_entries:
+                if config_entry.data.get(CONF_USERNAME) == current_username:
+                    entry_coordinator = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
+                    _LOGGER.debug(f"Refreshing status for VIN: {entry_coordinator.vin}")
+                    try:
+                        # Use the async request_update method directly
+                        result = await entry_coordinator.vehicle.request_update()
+                        if result:
+                            _LOGGER.debug("Refresh command succeeded, updating coordinator data")
+                            # Wait a moment for the vehicle to process the command
+                            await asyncio.sleep(2)
+                            # Force refresh the coordinator data
+                            await entry_coordinator.async_request_refresh()
+                        else:
+                            _LOGGER.warning(f"Refresh command failed for VIN: {entry_coordinator.vin}")
+                    except Exception as e:
+                        _LOGGER.error(f"Error during refresh for VIN {entry_coordinator.vin}: {e}")
 
     async def async_clear_tokens_service(service_call):
-        await hass.async_add_executor_job(clear_tokens, hass, service_call, coordinator)
+        """Clear tokens for this user account"""
+        await coordinator.vehicle.clear_token()
 
     async def poll_api_service(service_call):
+        """Poll API for this vehicle"""
         await coordinator.async_request_refresh()
 
     async def handle_reload(service):
@@ -199,24 +246,6 @@ async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.debug("OPTIONS CHANGE")
     await hass.config_entries.async_reload(entry.entry_id)
 
-
-def refresh_status(hass, service, coordinator):
-    """Get latest vehicle status from vehicle, actively polls the car"""
-    _LOGGER.debug("Running Service")
-    vin = service.data.get("vin", "")
-    status = coordinator.vehicle.request_update(vin)
-    if status == 401:
-        _LOGGER.debug("Invalid VIN")
-    elif status == 200:
-        _LOGGER.debug("Refresh Sent")
-
-
-def clear_tokens(hass, service, coordinator):
-    """Clear the token file in config directory, only use in emergency"""
-    _LOGGER.debug("Clearing Tokens")
-    coordinator.vehicle.clear_token()
-
-
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
 
@@ -229,12 +258,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class FordPassDataUpdateCoordinator(DataUpdateCoordinator):
     """DataUpdateCoordinator to handle fetching new data about the vehicle."""
 
-    def __init__(self, hass, user, password, vin, region, update_interval, save_token=False):
+    def __init__(self, hass, user, password, vin, region, update_interval, token_store):
         """Initialize the coordinator and set up the Vehicle object."""
         self._hass = hass
         self.vin = vin
-        config_path = hass.config.path("custom_components/fordpass/" + user + "_fordpass_token.txt")
-        self.vehicle = Vehicle(user, password, vin, region, save_token, config_path)
+        self.vehicle = Vehicle(user, password, vin, region, token_store, hass)
         self._available = True
 
         super().__init__(
@@ -248,21 +276,13 @@ class FordPassDataUpdateCoordinator(DataUpdateCoordinator):
         """Fetch data from FordPass."""
         try:
             async with async_timeout.timeout(30):
-                data = await self._hass.async_add_executor_job(
-                    self.vehicle.status  # Fetch new status
-                )
+                data = await self.vehicle.status()
 
                 # Temporarily removed due to Ford backend API changes
-                # data["guardstatus"] = await self._hass.async_add_executor_job(
-                #    self.vehicle.guardStatus  # Fetch new status
-                # )
+                # data["guardstatus"] = await self.vehicle.guardStatus()
 
-                data["messages"] = await self._hass.async_add_executor_job(
-                    self.vehicle.messages
-                )
-                data["vehicles"] = await self._hass.async_add_executor_job(
-                    self.vehicle.vehicles
-                )
+                data["messages"] = await self.vehicle.messages()
+                data["vehicles"] = await self.vehicle.vehicles()
                 _LOGGER.debug(data)
                 # If data has now been fetched but was previously unavailable, log and reset
                 if not self._available:
